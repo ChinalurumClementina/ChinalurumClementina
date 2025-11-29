@@ -2,7 +2,7 @@
 
 ### This is Chinalurum Clementina Amadiegwu
 
-### I am a Data Analyst /Reasearcher
+### I am a Data Analyst /Researcher/ Educator/ Behaviour Interventionist
 _ Call me a Data Analyst-Statistician who loves to collect numbers and statistics (data), clean and transform data to identify trends, create models, present results and provide meaningful insights.
 - 🔭 I’m currently working on an SQL Project
 - 🌱 I’m currently learning SQL
