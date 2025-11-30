@@ -1,0 +1,141 @@
+ PROJECT QUERIES
+ Table overview
+SELECT*
+FROM Customer;
+
+CUSTOMER ANALYSIS QUERIES
+ Count of Customers by Gender
+SELECT  COUNT(*) Gender
+FROM Customer
+WHERE Gender = 'Female';
+
+SELECT  COUNT(*) Gender
+FROM Customer
+WHERE Gender = 'male';
+
+SELECT COUNT(*) AS Total_Customers
+FROM Customer;
+
+Age Distribution of Customers
+SELECT 
+    CASE 
+        WHEN DATEDIFF(YEAR, Birth_Date, GETDATE()) < 30 THEN 'Under 30'
+        WHEN DATEDIFF(YEAR, Birth_Date, GETDATE()) BETWEEN 30 AND 40 THEN '30 - 40'
+        ELSE 'Above 40'
+    END AS Age_Group,
+    COUNT(*) AS Total_Customers
+FROM Customer
+GROUP BY 
+    CASE 
+        WHEN DATEDIFF(YEAR, Birth_Date, GETDATE()) < 30 THEN 'Under 30'
+        WHEN DATEDIFF(YEAR, Birth_Date, GETDATE()) BETWEEN 30 AND 40 THEN '30 - 40'
+        ELSE 'Above 40'
+    END;
+
+ACCOUNT ANALYSIS QUERIES
+    Count Accounts by Type
+SELECT Account_Type, COUNT(*) AS Total_Accounts
+FROM Accounts
+GROUP BY Account_Type;
+
+Total Balance Across All Accounts
+
+SELECT SUM(Balance) AS Total_Balance
+FROM Accounts;
+
+Average Balance per Account Type
+SELECT Account_Type, AVG(Balance) AS Average_Balance
+FROM Accounts
+GROUP BY Account_Type;
+
+Active vs Dormant vs Closed Accounts
+SELECT Status, COUNT(*) AS Total
+FROM Accounts
+GROUP BY Status;
+
+TRANSACTION ANALYSIS QUERIES
+Total Number of Transactions
+SELECT COUNT(*) AS Total_Transactions
+FROM Transactions;
+
+Total Amount by Transaction Type
+SELECT Transaction_Type, SUM(Amount) AS Total_Amount
+FROM Transactions
+GROUP BY Transaction_Type;
+
+Monthly Transaction Volume
+SELECT 
+    FORMAT(Transaction_Date, 'yyyy-MM') AS Month,
+    COUNT(*) AS Total_Transactions
+FROM Transactions
+GROUP BY FORMAT(Transaction_Date, 'yyyy-MM')
+ORDER BY Month;
+
+Highest Transaction Per Account
+SELECT Account_Number, MAX(Amount) AS Highest_Transaction
+FROM Transactions
+GROUP BY Account_Number;
+
+Top 5 Accounts With the Most Transactions
+SELECT TOP 5 Account_Number, COUNT(*) AS Number_of_Transactions
+FROM Transactions
+GROUP BY Account_Number
+ORDER BY Number_of_Transactions DESC;
+
+Total Withdrawal vs Deposit vs Transfer
+SELECT 
+    Transaction_Type,
+    COUNT(*) AS Total_Count,
+    SUM(Amount) AS Total_Amount
+FROM Transactions
+GROUP BY Transaction_Type;
+
+Daily Transaction Trend
+SELECT 
+    CAST(Transaction_Date AS DATE) AS Day,
+    COUNT(*) AS Total_Transactions
+FROM Transactions
+GROUP BY CAST(Transaction_Date AS DATE)
+ORDER BY Day;
+
+Customers With No Transactions (Using Accounts)
+SELECT C.Customer_ID, C.First_Name, C.Last_Name
+FROM Customer C
+LEFT JOIN Accounts A ON C.Customer_ID = A.Customer_ID
+LEFT JOIN Transactions T ON A.Account_Number = T.Account_Number
+WHERE T.Transaction_ID IS NULL;
+
+Customer–Transaction Relationship Queries
+
+Total Transaction Amount per Customer
+SELECT 
+    C.Customer_ID,
+    C.First_Name,
+    C.Last_Name,
+    SUM(T.Amount) AS Total_Transaction_Amount
+FROM Customer C
+JOIN Accounts A ON C.Customer_ID = A.Customer_ID
+JOIN Transactions T ON A.Account_Number = T.Account_Number
+GROUP BY C.Customer_ID, C.First_Name, C.Last_Name;
+
+Customers With the Highest Deposit Amount
+SELECT TOP 10 
+    C.First_Name,
+    C.Last_Name,
+    SUM(T.Amount) AS Total_Deposits
+FROM Customer C
+JOIN Accounts A ON C.Customer_ID = A.Customer_ID
+JOIN Transactions T ON A.Account_Number = T.Account_Number
+WHERE T.Transaction_Type = 'Deposit'
+GROUP BY C.First_Name, C.Last_Name
+ORDER BY Total_Deposits DESC;
+
+Accounts with Both High Deposits and Frequent Withdrawals
+SELECT 
+    Account_Number,
+    SUM(CASE WHEN Transaction_Type = 'Deposit' THEN Amount ELSE 0 END) AS Total_Deposits,
+    SUM(CASE WHEN Transaction_Type = 'Withdrawal' THEN Amount ELSE 0 END) AS Total_Withdrawals
+FROM Transactions
+GROUP BY Account_Number
+HAVING SUM(CASE WHEN Transaction_Type = 'Deposit' THEN Amount ELSE 0 END) > 5000
+AND SUM(CASE WHEN Transaction_Type = 'Withdrawal' THEN Amount ELSE 0 END) > 3000;
